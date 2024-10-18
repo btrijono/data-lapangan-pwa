@@ -35,6 +35,11 @@
             background-color: grey;
             cursor: not-allowed;
         }
+        img {
+            margin-top: 10px;
+            max-width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +66,18 @@
         <input type="date" id="tanggal" required>
     </div>
 
+    <div class="form-group">
+        <label for="koordinat">Koordinat Lokasi:</label>
+        <input type="text" id="koordinat" readonly placeholder="Koordinat lokasi akan diambil otomatis">
+        <button type="button" onclick="ambilLokasi()">Ambil Koordinat</button>
+    </div>
+
+    <div class="form-group">
+        <label for="foto">Ambil Foto:</label>
+        <input type="file" id="foto" accept="image/*" capture="camera" onchange="tampilkanFoto(event)">
+        <img id="previewFoto" src="" alt="Foto Preview">
+    </div>
+
     <button onclick="simpanData()">Simpan Data</button>
     <button onclick="lihatData()">Lihat Data Tersimpan</button>
 
@@ -68,15 +85,46 @@
     <pre id="output"></pre>
 
     <script>
+        let fotoData = ''; // Variabel global untuk menyimpan data foto
+
+        // Fungsi untuk mengambil lokasi (latitude, longitude)
+        function ambilLokasi() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    document.getElementById('koordinat').value = latitude + ", " + longitude;
+                }, function(error) {
+                    alert("Gagal mengambil lokasi: " + error.message);
+                });
+            } else {
+                alert("Geolokasi tidak didukung oleh browser ini.");
+            }
+        }
+
+        // Fungsi untuk menampilkan preview foto dan menyimpan data foto dalam format base64
+        function tampilkanFoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewFoto').src = e.target.result;
+                    fotoData = e.target.result; // Simpan foto dalam format base64
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         // Fungsi untuk menyimpan data ke LocalStorage
         function simpanData() {
             const nama = document.getElementById("nama").value;
             const lokasi = document.getElementById("lokasi").value;
             const deskripsi = document.getElementById("deskripsi").value;
             const tanggal = document.getElementById("tanggal").value;
+            const koordinat = document.getElementById("koordinat").value;
 
-            if (!nama || !lokasi || !deskripsi || !tanggal) {
-                alert("Semua kolom harus diisi!");
+            if (!nama || !lokasi || !deskripsi || !tanggal || !koordinat || !fotoData) {
+                alert("Semua kolom harus diisi dan foto harus diambil!");
                 return;
             }
 
@@ -84,7 +132,9 @@
                 nama: nama,
                 lokasi: lokasi,
                 deskripsi: deskripsi,
-                tanggal: tanggal
+                tanggal: tanggal,
+                koordinat: koordinat,
+                foto: fotoData // Simpan data foto base64
             };
 
             // Mengambil data yang sudah ada di LocalStorage
@@ -122,6 +172,10 @@
             document.getElementById("lokasi").value = '';
             document.getElementById("deskripsi").value = '';
             document.getElementById("tanggal").value = '';
+            document.getElementById("koordinat").value = '';
+            document.getElementById("foto").value = '';
+            document.getElementById("previewFoto").src = '';
+            fotoData = '';
         }
     </script>
 
