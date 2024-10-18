@@ -80,6 +80,7 @@
 
     <button onclick="simpanData()">Simpan Data</button>
     <button onclick="lihatData()">Lihat Data Tersimpan</button>
+    <button onclick="sinkronisasiData()">Sinkronisasi Data ke Server</button>
 
     <h2>Data yang Tersimpan:</h2>
     <pre id="output"></pre>
@@ -176,6 +177,41 @@
             document.getElementById("foto").value = '';
             document.getElementById("previewFoto").src = '';
             fotoData = '';
+        }
+
+        // Fungsi untuk sinkronisasi data ke server
+        function sinkronisasiData() {
+            let dataTersimpan = localStorage.getItem('dataLapangan');
+            if (!dataTersimpan) {
+                alert("Tidak ada data untuk disinkronisasi.");
+                return;
+            }
+
+            dataTersimpan = JSON.parse(dataTersimpan);
+
+            // Mengirim data ke server
+            fetch('https://your-server.com/api/data', { // Ganti dengan URL server API Anda
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataTersimpan)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Gagal sinkronisasi ke server');
+            })
+            .then(data => {
+                alert('Sinkronisasi berhasil: ' + data.message);
+                // Hapus data lokal setelah sinkronisasi berhasil
+                localStorage.removeItem('dataLapangan');
+                document.getElementById('output').textContent = 'Belum ada data yang tersimpan.';
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
         }
     </script>
 
