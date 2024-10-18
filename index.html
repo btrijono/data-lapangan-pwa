@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Data Lapangan</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Form Pengambilan Data Lapangan</h1>
+
+    <div class="form-group">
+        <label for="nama">Nama Pengambil Data:</label>
+        <input type="text" id="nama" placeholder="Masukkan nama" required>
+    </div>
+
+    <div class="form-group">
+        <label for="lokasi">Lokasi Pengambilan Data:</label>
+        <input type="text" id="lokasi" placeholder="Masukkan lokasi" required>
+    </div>
+
+    <div class="form-group">
+        <label for="deskripsi">Deskripsi Temuan:</label>
+        <textarea id="deskripsi" placeholder="Masukkan deskripsi temuan" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="tanggal">Tanggal Pengambilan Data:</label>
+        <input type="date" id="tanggal" required>
+    </div>
+
+    <button onclick="simpanData()">Simpan Data</button>
+    <button onclick="lihatData()">Lihat Data Tersimpan</button>
+
+    <h2>Data yang Tersimpan:</h2>
+    <pre id="output"></pre>
+
+    <script>
+        // Fungsi untuk menyimpan data ke LocalStorage
+        function simpanData() {
+            const nama = document.getElementById("nama").value;
+            const lokasi = document.getElementById("lokasi").value;
+            const deskripsi = document.getElementById("deskripsi").value;
+            const tanggal = document.getElementById("tanggal").value;
+
+            if (!nama || !lokasi || !deskripsi || !tanggal) {
+                alert("Semua kolom harus diisi!");
+                return;
+            }
+
+            const data = {
+                nama: nama,
+                lokasi: lokasi,
+                deskripsi: deskripsi,
+                tanggal: tanggal
+            };
+
+            // Mengambil data yang sudah ada di LocalStorage
+            let dataTersimpan = localStorage.getItem('dataLapangan');
+            if (dataTersimpan) {
+                dataTersimpan = JSON.parse(dataTersimpan);
+            } else {
+                dataTersimpan = [];
+            }
+
+            // Menambahkan data baru
+            dataTersimpan.push(data);
+
+            // Menyimpan kembali ke LocalStorage
+            localStorage.setItem('dataLapangan', JSON.stringify(dataTersimpan));
+
+            alert('Data berhasil disimpan!');
+            clearForm();
+        }
+
+        // Fungsi untuk menampilkan data yang tersimpan
+        function lihatData() {
+            let dataTersimpan = localStorage.getItem('dataLapangan');
+            if (dataTersimpan) {
+                dataTersimpan = JSON.parse(dataTersimpan);
+                document.getElementById('output').textContent = JSON.stringify(dataTersimpan, null, 2);
+            } else {
+                document.getElementById('output').textContent = 'Belum ada data yang tersimpan.';
+            }
+        }
+
+        // Fungsi untuk membersihkan form setelah penyimpanan
+        function clearForm() {
+            document.getElementById("nama").value = '';
+            document.getElementById("lokasi").value = '';
+            document.getElementById("deskripsi").value = '';
+            document.getElementById("tanggal").value = '';
+        }
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>
